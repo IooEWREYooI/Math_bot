@@ -15,11 +15,11 @@ public class Math_Prof_Formuls_bot extends TelegramLongPollingBot {
     String path = (new File("C:\\Users\\Яков Мануилов\\IdeaProjects\\TelegramBots\\Math_prof_formulas_bot\\Формулы\\").exists()) ? "C:\\Users\\Яков Мануилов\\IdeaProjects\\TelegramBots\\Math_prof_formulas_bot\\Формулы\\" : "/root/bot/Формулы/" ;
     @Override
     public String getBotUsername() {
-        return "";
+        return "Math_Prof_Formuls_bot";
     }
     @Override
     public String getBotToken() {
-        return "";
+        return "5523641768:AAH7xppl8yK1bDXLpKaJiPj8UsZKM1_iFOA";
     }
     @Override
     public void onUpdateReceived(Update update) {
