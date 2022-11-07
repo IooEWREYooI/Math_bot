@@ -15,16 +15,19 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+
+import static telegrambots.BotConfig.*;
+
 @Component
 public class Math_Prof_Formuls_bot extends TelegramLongPollingBot {
     String path = (new File("C:\\Users\\Яков Мануилов\\IdeaProjects\\TelegramBots\\Math_prof_formulas_bot\\Формулы\\").exists()) ? "C:\\Users\\Яков Мануилов\\IdeaProjects\\TelegramBots\\Math_prof_formulas_bot\\Формулы\\" : "/root/bot/Формулы/" ;
     @Override
     public String getBotUsername() {
-        return "userAboba228_bot";
+        return BOT_NAME_TEST;
     }
     @Override
     public String getBotToken() {
-        return "5782481564:AAEqgsSDhMNgRLQuSTSuTMp9jg4-SE5Z5fw";
+        return BOT_TOKEN_TEST;
     }
     @Async
     @Override
