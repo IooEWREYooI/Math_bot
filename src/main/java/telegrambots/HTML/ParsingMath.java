@@ -6,13 +6,13 @@ import org.jsoup.nodes.Element;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 
 public class ParsingMath {
     public ArrayList<String> getListQuestionsAndAnswers(){
         Document page = getHTML();
-        Iterator<Element> iteratorElements = page.select("body > div.wrapper > div.sgia-main-content > div.sac3514f8 > div.prob_list > div.prob_view").iterator();
+        String securityTag = page.select("body > div.wrapper > div.sgia-main-content").tagName("div").toString().split("\"")[7];
+        Iterator<Element> iteratorElements = page.select("body > div.wrapper > div.sgia-main-content > div."+securityTag+" > div.prob_list > div.prob_view").iterator();
         ArrayList<String> list = new ArrayList<>();
         while (iteratorElements.hasNext()) {
             try {

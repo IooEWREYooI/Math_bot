@@ -1,5 +1,10 @@
 package telegrambots.service;
 
+import org.apache.batik.transcoder.Transcoder;
+import org.apache.batik.transcoder.TranscoderException;
+import org.apache.batik.transcoder.TranscoderInput;
+import org.apache.batik.transcoder.TranscoderOutput;
+import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.commons.io.FileUtils;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -14,20 +19,24 @@ import telegrambots.HTML.ParsingMath;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 import static telegrambots.BotConfig.*;
 
 @Component
 public class Math_Prof_Formuls_bot extends TelegramLongPollingBot {
-    String path = (new File("C:\\Users\\Яков Мануилов\\IdeaProjects\\TelegramBots\\Math_prof_formulas_bot\\Формулы\\").exists()) ? "C:\\Users\\Яков Мануилов\\IdeaProjects\\TelegramBots\\Math_prof_formulas_bot\\Формулы\\" : "/root/bot/Формулы/" ;
+    final private String path = (new File("C:\\Users\\Яков Мануилов\\IdeaProjects\\TelegramBots\\Math_prof_formulas_bot\\Формулы\\").exists()) ? "C:\\Users\\Яков Мануилов\\IdeaProjects\\TelegramBots\\Math_prof_formulas_bot\\Формулы\\" : "/root/bot/Формулы/" ;
     @Override
     public String getBotUsername() {
-        return BOT_NAME_TEST;
+
+        return (new File("C:\\Users\\Яков Мануилов\\IdeaProjects\\TelegramBots\\Math_prof_formulas_bot\\Формулы\\").exists()) ? BOT_NAME_TEST : BOT_NAME;
     }
     @Override
     public String getBotToken() {
-        return BOT_TOKEN_TEST;
+        return (new File("C:\\Users\\Яков Мануилов\\IdeaProjects\\TelegramBots\\Math_prof_formulas_bot\\Формулы\\").exists()) ? BOT_TOKEN_TEST : BOT_TOKEN;
     }
     @Async
     @Override
@@ -53,20 +62,13 @@ public class Math_Prof_Formuls_bot extends TelegramLongPollingBot {
                 ArrayList<String> list = new ParsingMath().getListQuestionsAndAnswers();
                 Collections.shuffle(list);
                 String[] arrayQuestion = list.get(0).split(" \\| ");
-                URL url = null;
-                File SVG = new File(chatId+".svg");
-                try {
-                    url = new URL(arrayQuestion[0]);
-                } catch (MalformedURLException e) {
-                    throw new RuntimeException(e);
-                }
-                try {
-                    FileUtils.copyURLToFile(url, SVG);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                sendPhoto(update,SVG,"sadasd");
+                File SVG = new File(path + chatId + ".svg");
+                File PNG = new File(path + chatId + ".png");
+                convertURL2Svg(arrayQuestion[0], SVG);
+                convertSvg2Png(SVG, PNG);
+                sendPhoto(update, PNG,"*Решите пример:*");
                 userOnScanByTasks.put(chatId, arrayQuestion[1]);
+                deleteSvgAndPng(chatId);
             }
             else if (hasMessage && userOnScanByTasks.containsKey(chatId)) {
                 String answer = userOnScanByTasks.get(chatId);
@@ -79,7 +81,7 @@ public class Math_Prof_Formuls_bot extends TelegramLongPollingBot {
     private String[] dataForUsersOnFormuls = initData(randomIndex());
     private HashMap<Long, String> userOnScanByTasks = new HashMap<>();
     private HashMap<Long, String[]> userOnScanByFormuls = new HashMap<>();
-    private String[] initData (int index){
+    private String[] initData(int index){
         ArrayList<String[]> list = initList();
         String[] dataForUsersOnFormuls = list.get(index);
         return dataForUsersOnFormuls;
@@ -117,18 +119,19 @@ public class Math_Prof_Formuls_bot extends TelegramLongPollingBot {
         list.add(new String[]{"cos0 = ?","1", "Таблица" + s});
         return list;
     }
-    private void sendPhoto (Update update, File photo, String caption){
+    private void sendPhoto(Update update, File photo, String caption){
         try {
             execute(SendPhoto.builder()
                     .chatId(update.getMessage().getChatId())
                     .photo(new InputFile(photo))
                     .caption(caption)
+                    .parseMode("Markdown")
                     .build());
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);
         }
     }
-    private void sendMessage (Update update, String text){
+    private void sendMessage(Update update, String text){
         try {
             execute(SendMessage.builder()
                     .chatId(update.getMessage().getChatId())
@@ -138,6 +141,62 @@ public class Math_Prof_Formuls_bot extends TelegramLongPollingBot {
                     .build());
         } catch (Exception e){
             e.printStackTrace();
+        }
+    }
+    private void convertSvg2Png(File svg, File png) {
+
+        InputStream in = null;
+        OutputStream out = null;
+        try {
+            in = new FileInputStream(svg);
+            out = new FileOutputStream(png);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        out = new BufferedOutputStream(out);
+
+        Transcoder transcoder = new PNGTranscoder();
+        try {
+            TranscoderInput input = new TranscoderInput(in);
+            try {
+                TranscoderOutput output = new TranscoderOutput(out);
+                transcoder.transcode(input, output);
+            } catch (TranscoderException e) {
+                throw new RuntimeException(e);
+            } finally {
+                try {
+                    out.close();
+                } catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
+        } finally {
+            try {
+                in.close();
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+    }
+    private void convertURL2Svg(String urlStr, File file){
+        URL url = null;
+        try {
+            url = new URL(urlStr);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            FileUtils.copyURLToFile(url, file);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    private void deleteSvgAndPng(Long chatId){
+        try {
+            Files.deleteIfExists(Path.of(path + chatId + ".svg"));
+            Files.deleteIfExists(Path.of(path + chatId + ".png"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }
