@@ -5,10 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
-import telegrambots.sevice.Math_Prof_Formuls_bot;
-
-import java.util.Arrays;
-import java.util.Scanner;
+import telegrambots.service.Math_Prof_Formuls_bot;
 
 @SpringBootApplication
 public class MathProfFormulasBotApplication {
